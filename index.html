@@ -13,6 +13,22 @@
 
     <script>
         let map, snake, food, timer, sum = 0; //分别对应地图、贪吃蛇、点、时间、得分
+        let moveFlag = false;
+        let startArr = [
+            [3, 2, 'blue', null],
+            [2, 2, 'blue', null],
+            [1, 2, 'blue', null]
+        ];
+        //创建按钮
+        function createButton(name, klass, func) {
+            let button = document.createElement('button');
+            let btnContext = document.createTextNode(name);
+            button.className = klass;
+            button.appendChild(btnContext);
+            document.body.appendChild(button);
+            button.addEventListener('click', func);
+        }
+
         //地图
         function Map() {
             this.width = 800;
@@ -20,6 +36,7 @@
             this.position = "relative";
             this.bgcolor = '#333';
             this.overflow = 'hidden'
+            this.className = "map"
             this._map = null;
             this.show = function() {
                 this._map = document.createElement('div');
@@ -27,13 +44,11 @@
                 this._map.style.height = this.height + 'px';
                 this._map.style.position = this.position;
                 this._map.style.overflow = this.overflow;
+                this._map.className = this.className;
                 this._map.style.backgroundColor = this.bgcolor;
                 //把地图插入到页面中去
                 document.body.appendChild(this._map);
-                let button = document.createElement('button');
-                let btnContext = document.createTextNode('开始');
-                button.appendChild(btnContext);
-                document.body.appendChild(button);
+
             }
 
 
@@ -151,7 +166,7 @@
                 }
 
                 //撞到自己
-                for (let i = 0; i < this.snakeLen; i++) {
+                for (let i = 1; i < this.body.length; i++) {
                     if (nowX == this.body[i][0] && nowY == this.body[i][1]) {
                         clearInterval(timer)
                         alert("撞到自己,游戏结束");
@@ -168,25 +183,57 @@
             food = new Food();
             snake = new Snake();
 
-
             map.show();
             snake.show();
             food.show();
+            //创建开始按钮
+            createButton('开始', 'start', start);
+            createButton('重新开始', 'reStart', reStart);
+            createButton('暂停', 'stop', stop);
 
 
 
-            let btn = document.querySelector('button');
-            btn.addEventListener('click', function() {
-                timer = setInterval('snake.move()', 100);
-            })
+            //游戏开始
+            function start() {
+                if (!moveFlag) {
+                    moveFlag = true;
+                    timer = setInterval('snake.move()', 100);
+                }
+
+            }
+
+            //暂停游戏
+            function stop() {
+                moveFlag = false;
+                clearInterval(timer);
+            }
+
+            //重新开始
+            function reStart() {
+                document.querySelector('.map').innerHTML = '';
+                food = new Food();
+                snake = new Snake();
+                snake.show();
+                food.show();
+                clearInterval(timer);
+                moveFlag = false;
+            }
+
+
+
+            //上下左右
             document.body.onkeydown = function(e) {
-
                 e = e || window.event;
                 snake.setDirect(e.keyCode);
             }
+
+
+
         }
     </script>
 
 </body>
+
+</html>
 
 </html>
