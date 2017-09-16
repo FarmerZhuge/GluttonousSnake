@@ -10,16 +10,18 @@
 </head>
 
 <body>
-
+    <h1>当前得<b class='score'>0</b>分</h1>
     <script>
-        let map, snake, food, timer, sum = 0; //分别对应地图、贪吃蛇、点、时间、得分
+        let map, snake, food, level, timer, sum = 0; //分别对应地图、贪吃蛇、点、难度等级、定时器、得分
         let moveFlag = false;
         let prevHead = [];
+        let speed = 500;
         let startArr = [
             [3, 2, 'blue', null],
             [2, 2, 'blue', null],
             [1, 2, 'blue', null]
         ];
+        let score = document.querySelector('.score');
         //创建按钮
         function createButton(name, klass, func) {
             let button = document.createElement('button');
@@ -152,8 +154,18 @@
                     let x = this.body[snakeLen][0];
                     let y = this.body[snakeLen][1];
                     sum++;
+                    level = parseInt(sum / 2);
+                    if (level <= 9) {
+                        speed = 500 - 50 * level;
+                        clearInterval(timer);
+                        timer = setInterval('snake.move()', speed)
+                    }
+
+                    console.log(speed)
+                    score.innerHTML = sum;
                     this.body.push([x, y, 'blue', null]);
                     food.show();
+
                 }
 
                 //撞墙死
@@ -198,7 +210,7 @@
             function start() {
                 if (!moveFlag) {
                     moveFlag = true;
-                    timer = setInterval('snake.move()', 100);
+                    timer = setInterval('snake.move()', speed);
                 }
 
             }
