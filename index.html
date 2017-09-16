@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="css/css.css">
+    <title>贪吃蛇</title>
+</head>
+
+<body>
+
+    <script>
+        let map, snake, food, timer, sum = 0; //分别对应地图、贪吃蛇、点、时间、得分
+        //地图
+        function Map() {
+            this.width = 800;
+            this.height = 400;
+            this.position = "relative";
+            this.bgcolor = '#333';
+            this.overflow = 'hidden'
+            this._map = null;
+            this.show = function() {
+                this._map = document.createElement('div');
+                this._map.style.width = this.width + 'px';
+                this._map.style.height = this.height + 'px';
+                this._map.style.position = this.position;
+                this._map.style.overflow = this.overflow;
+                this._map.style.backgroundColor = this.bgcolor;
+                //把地图插入到页面中去
+                document.body.appendChild(this._map);
+                let button = document.createElement('button');
+                let btnContext = document.createTextNode('开始');
+                button.appendChild(btnContext);
+                document.body.appendChild(button);
+            }
+
+
+        }
+        //点
+        function Food() {
+            this.width = 20;
+            this.height = 20;
+            this.bgColor = 'red';
+            this.position = "absolute";
+            this._food = null;
+            this.x = 0;
+            this.y = 0;
+            this.show = function() {
+                if (this._food == null) {
+                    this._food = document.createElement('div');
+                    this._food.style.width = this.width + 'px';
+                    this._food.style.height = this.height + 'px';
+                    this._food.style.position = this.position;
+                    this._food.style.backgroundColor = this.bgColor;
+                    map._map.appendChild(this._food)
+                }
+                this.x = Math.floor(Math.random() * parseInt(map.width / this.width));
+                this.y = Math.floor(Math.random() * parseInt(map.height / this.height));
+                this._food.style.left = this.x * this.width + 'px';
+                this._food.style.top = this.y * this.height + 'px';
+            }
+        }
+        //贪吃蛇
+        function Snake() {
+            this.width = 20;
+            this.height = 20;
+            this.position = 'absolute';
+            this.direct = 'right';
+            //初始化蛇的长度和位置
+            this.body = [
+                [3, 2, 'blue', null],
+                [2, 2, 'blue', null],
+                [1, 2, 'blue', null]
+            ];
+            //控制蛇的方向
+            this.setDirect = function(code) {
+                switch (code) {
+                    case 37:
+                        if (this.direct != 'right') this.direct = 'left';
+                        break;
+                    case 38:
+                        if (this.direct != "down") this.direct = 'up';
+                        break;
+                    case 39:
+                        if (this.direct != "left") this.direct = 'right';
+                        break;
+                    case 40:
+                        if (this.direct != "up") this.direct = 'down';
+                        break;
+                }
+            }
+
+            //显示蛇
+            this.show = function() {
+                for (let i = 0; i < this.body.length; i++) {
+                    if (this.body[i][3] == null) {
+                        this.body[i][3] = document.createElement('div');
+                        this.body[i][3].style.width = this.width + 'px';
+                        this.body[i][3].style.height = this.height + 'px';
+                        this.body[i][3].style.backgroundColor = this.body[i][2];
+                        this.body[i][3].style.position = this.position;
+                        map._map.appendChild(this.body[i][3]);
+                    }
+                    this.body[i][3].style.left = this.body[i][0] * this.width + 'px';
+                    this.body[i][3].style.top = this.body[i][1] * this.height + 'px';
+                }
+            }
+
+            //蛇的移动
+            this.move = function() {
+                let snakeLen = this.body.length - 1;
+                for (let i = snakeLen; i > 0; i--) {
+                    this.body[i][0] = this.body[i - 1][0];
+                    this.body[i][1] = this.body[i - 1][1];
+                }
+                switch (this.direct) {
+                    case 'left':
+                        this.body[0][0] = this.body[0][0] - 1;
+                        break;
+                    case 'right':
+                        this.body[0][0] = this.body[0][0] + 1;
+                        break;
+                    case 'up':
+                        this.body[0][1] = this.body[0][1] - 1;
+                        break;
+                    case 'down':
+                        this.body[0][1] = this.body[0][1] + 1;
+                        break;
+                    default:
+                        return;
+                }
+                //吃到食物
+                if (this.body[0][0] == food.x && this.body[0][1] == food.y) {
+                    let x = this.body[snakeLen][0];
+                    let y = this.body[snakeLen][1];
+                    sum++;
+                    this.body.push([x, y, 'blue', null]);
+                    food.show();
+                }
+
+                //撞墙死
+                let nowX = this.body[0][0];
+                let nowY = this.body[0][1];
+
+                if (nowX < 0 || nowX > parseInt(map.width / this.width) - 1 || nowY < 0 || nowY > parseInt(map.height / this.height) - 1) {
+                    alert("撞墙,游戏结束");
+                    clearInterval(timer);
+                    return;
+                }
+
+                //撞到自己
+                for (let i = 0; i < this.snakeLen; i++) {
+                    if (nowX == this.body[i][0] && nowY == this.body[i][1]) {
+                        clearInterval(timer)
+                        alert("撞到自己,游戏结束");
+                        return;
+                    }
+                }
+                this.show();
+            }
+        }
+
+
+        window.onload = function() {
+            map = new Map();
+            food = new Food();
+            snake = new Snake();
+
+
+            map.show();
+            snake.show();
+            food.show();
+
+
+
+            let btn = document.querySelector('button');
+            btn.addEventListener('click', function() {
+                timer = setInterval('snake.move()', 100);
+            })
+            document.body.onkeydown = function(e) {
+
+                e = e || window.event;
+                snake.setDirect(e.keyCode);
+            }
+        }
+    </script>
+
+</body>
+
+</html>
