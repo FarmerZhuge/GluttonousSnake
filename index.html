@@ -53,8 +53,6 @@
                 document.body.appendChild(this._map);
 
             }
-
-
         }
         //点
         function Food() {
@@ -74,10 +72,25 @@
                     this._food.style.backgroundColor = this.bgColor;
                     map._map.appendChild(this._food)
                 }
-                this.x = Math.floor(Math.random() * parseInt(map.width / this.width));
-                this.y = Math.floor(Math.random() * parseInt(map.height / this.height));
-                this._food.style.left = this.x * this.width + 'px';
-                this._food.style.top = this.y * this.height + 'px';
+                let _this = this;
+                //防止点刷新到了贪吃蛇身上
+                function foodCheck() {
+                    let arr1 = [];
+                    _this.x = Math.floor(Math.random() * parseInt(map.width / _this.width));
+                    _this.y = Math.floor(Math.random() * parseInt(map.height / _this.height));
+                    for (let i = 0; i < snake.body.length - 1; i++) {
+                        if (_this.x == snake.body[i][0] && _this.y == snake.body[i][1]) {
+                            return arguments.callee()
+                        }
+                    }
+                    arr1.push(_this.x);
+                    arr1.push(_this.y);
+                    return arr1
+                }
+
+                let foodcheck = foodCheck();
+                this._food.style.left = foodcheck[0] * this.width + 'px';
+                this._food.style.top = foodcheck[1] * this.height + 'px';
             }
         }
         //贪吃蛇
@@ -88,9 +101,9 @@
             this.direct = 'right';
             //初始化蛇的长度和位置
             this.body = [
-                [3, 2, 'blue', null],
-                [2, 2, 'blue', null],
-                [1, 2, 'blue', null]
+                [3, 2, 'green', null],
+                [2, 2, 'green', null],
+                [1, 2, 'green', null]
             ];
             //控制蛇的方向
             this.setDirect = function(code) {
@@ -129,22 +142,30 @@
             //蛇的移动
             this.move = function() {
                 let snakeLen = this.body.length - 1;
-                for (let i = snakeLen; i > 0; i--) {
-                    this.body[i][0] = this.body[i - 1][0];
-                    this.body[i][1] = this.body[i - 1][1];
-                }
                 switch (this.direct) {
                     case 'left':
-                        this.body[0][0] = this.body[0][0] - 1;
+                        this.body[this.body.length - 1][0] = this.body[0][0] - 1;
+                        this.body[this.body.length - 1][1] = this.body[0][1]
+                        this.body.unshift(this.body.pop())
                         break;
                     case 'right':
-                        this.body[0][0] = this.body[0][0] + 1;
+                        //this.body[0][0] += 1;
+                        this.body[this.body.length - 1][0] = this.body[0][0] + 1;
+                        this.body[this.body.length - 1][1] = this.body[0][1]
+                        this.body.unshift(this.body.pop());
+
                         break;
                     case 'up':
-                        this.body[0][1] = this.body[0][1] - 1;
+                        //    this.body[0][1] -= 1;
+                        this.body[this.body.length - 1][1] = this.body[0][1] - 1;
+                        this.body[this.body.length - 1][0] = this.body[0][0];
+                        this.body.unshift(this.body.pop());
                         break;
                     case 'down':
-                        this.body[0][1] = this.body[0][1] + 1;
+                        // this.body[0][1] += 1;
+                        this.body[this.body.length - 1][1] = this.body[0][1] + 1;
+                        this.body[this.body.length - 1][0] = this.body[0][0];
+                        this.body.unshift(this.body.pop());
                         break;
                     default:
                         return;
@@ -160,10 +181,8 @@
                         clearInterval(timer);
                         timer = setInterval('snake.move()', speed)
                     }
-
-                    console.log(speed)
                     score.innerHTML = sum;
-                    this.body.push([x, y, 'blue', null]);
+                    this.body.push([x, y, 'green', null]);
                     food.show();
 
                 }
